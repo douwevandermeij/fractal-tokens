@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fractal-tokens"
-version = "0.0.1"
+version = "0.0.2"
 description = "Fractal Tokens provides a flexible way to generate and verify JWT tokens for your Python applications."
 authors = ["Douwe van der Meij <douwe@karibu-online.nl>"]
 
@@ -24,7 +24,10 @@ classifiers = [
     "Programming Language :: Python",
 ]
 description-file = "README.md"
-requires = []
+requires = [
+    "cryptography",
+    "python-jose",
+]
 requires-python=">=3.8"
 
 [tool.flit.metadata.requires-extra]
