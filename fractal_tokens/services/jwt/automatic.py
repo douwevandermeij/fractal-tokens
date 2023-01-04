@@ -7,7 +7,7 @@ from jose import jwt
 from fractal_tokens.exceptions import NotAllowedException
 from fractal_tokens.services.jwk import JwkService
 from fractal_tokens.services.jwt import JwtTokenService
-from fractal_tokens.services.jwt.asymmetric import ExtendedAsymmetricJwtTokenService
+from fractal_tokens.services.jwt.asymmetric import AsymmetricJwtTokenService
 from fractal_tokens.services.jwt.symmetric import SymmetricJwtTokenService
 from fractal_tokens.settings import ACCESS_TOKEN_EXPIRATION_SECONDS
 
@@ -17,21 +17,19 @@ class AutomaticJwtTokenService(JwtTokenService):
         self.issuer = issuer
         self.symmetric_token_service = SymmetricJwtTokenService(
             issuer=issuer,
-            secret=secret,
+            secret_key=secret,
         )
         self.jwk_service = jwk_service
 
     @classmethod
     def install(
         cls,
-        app_name: str,
-        app_env: str,
-        app_domain: str,
+        issuer: str,
         secret_key: str,
         jwk_service: JwkService,
     ):
         yield cls(
-            f"{app_name}@{app_env}.{app_domain}",
+            issuer,
             secret_key,
             jwk_service,
         )
@@ -44,29 +42,26 @@ class AutomaticJwtTokenService(JwtTokenService):
     ) -> str:
         return self.symmetric_token_service.generate(payload, token_type, seconds_valid)
 
-    def verify(self, token: str, *, typ: str):
+    def decode(self, token: str):
         headers = jwt.get_unverified_headers(token)
         claims = jwt.get_unverified_claims(token)
         if headers["alg"] == "HS256":
-            return self.symmetric_token_service.verify(token, typ=typ)
+            return self.symmetric_token_service.decode(token)
         if headers["alg"] == "RS256":
             jwks = self.jwk_service.get_jwks(claims["iss"])
+            kid = headers.get("kid", None)
             for key in jwks:
-                if key["id"] == headers["kid"]:
+                if key.id == kid or not kid:
                     public_key = serialization.load_pem_public_key(
-                        key["public_key"].encode("utf-8"), backend=default_backend()
+                        key.public_key.encode("utf-8"), backend=default_backend()
                     )
-                    asymmetric_token_service = ExtendedAsymmetricJwtTokenService(
+                    asymmetric_token_service = AsymmetricJwtTokenService(
                         issuer=self.issuer,
                         private_key="",
                         public_key=public_key,
-                        kid=key["id"],
                     )
-                    return asymmetric_token_service.verify(token, typ=typ)
+                    return asymmetric_token_service.decode(token)
         raise NotAllowedException("No permission!")
-
-    def decode(self, token: str):
-        ...
 
     def get_unverified_claims(self, token: str):
         return jwt.get_unverified_claims(token)

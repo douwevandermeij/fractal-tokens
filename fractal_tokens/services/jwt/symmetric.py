@@ -7,15 +7,15 @@ from fractal_tokens.settings import ACCESS_TOKEN_EXPIRATION_SECONDS
 
 
 class SymmetricJwtTokenService(JwtTokenService):
-    def __init__(self, issuer: str, secret: str):
+    def __init__(self, issuer: str, secret_key: str):
         self.issuer = issuer
-        self.secret = secret
+        self.secret_key = secret_key
         self.algorithm = "HS256"
 
     @classmethod
-    def install(cls, app_name: str, app_env: str, app_domain: str, secret_key: str):
+    def install(cls, issuer: str, secret_key: str):
         yield cls(
-            f"{app_name}@{app_env}.{app_domain}",
+            issuer,
             secret_key,
         )
 
@@ -27,12 +27,12 @@ class SymmetricJwtTokenService(JwtTokenService):
     ) -> str:
         return jwt.encode(
             self._prepare(payload, token_type, seconds_valid, self.issuer),
-            self.secret,
+            self.secret_key,
             algorithm=self.algorithm,
         )
 
     def decode(self, token: str):
-        return jwt.decode(token, self.secret, algorithms=self.algorithm)
+        return jwt.decode(token, self.secret_key, algorithms=self.algorithm)
 
     def get_unverified_claims(self, token: str):
         return jwt.get_unverified_claims(token)

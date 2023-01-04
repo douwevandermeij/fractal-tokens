@@ -7,26 +7,18 @@ from fractal_tokens.settings import ACCESS_TOKEN_EXPIRATION_SECONDS
 
 
 class AsymmetricJwtTokenService(JwtTokenService):
-    def __init__(self, issuer: str, private_key: str, public_key: str):
+    def __init__(self, issuer: str, private_key: str, public_key: PUBLIC_KEY_TYPES):
         self.issuer = issuer
         self.private_key = private_key
-        self.public_key = public_key
+        self.public_key = public_key.public_bytes(
+            crypto_serialization.Encoding.PEM,
+            crypto_serialization.PublicFormat.SubjectPublicKeyInfo,
+        ).decode("utf-8")
         self.algorithm = "RS256"
 
     @classmethod
-    def install(
-        cls,
-        app_name: str,
-        app_env: str,
-        app_domain: str,
-        private_key: str,
-        public_key: str,
-    ):
-        yield cls(
-            f"{app_name}@{app_env}.{app_domain}",
-            private_key,
-            public_key,
-        )
+    def install(cls, *args, **kwargs):
+        yield cls(*args, **kwargs)
 
     def generate(
         self,
@@ -51,12 +43,25 @@ class ExtendedAsymmetricJwtTokenService(AsymmetricJwtTokenService):
     def __init__(
         self, issuer: str, private_key: str, public_key: PUBLIC_KEY_TYPES, kid: str
     ):
-        super(ExtendedAsymmetricJwtTokenService, self).__init__(issuer, private_key, "")
-        self.public_key = public_key.public_bytes(
-            crypto_serialization.Encoding.PEM,
-            crypto_serialization.PublicFormat.SubjectPublicKeyInfo,
-        ).decode("utf-8")
+        super(ExtendedAsymmetricJwtTokenService, self).__init__(
+            issuer, private_key, public_key
+        )
         self.kid = kid
+
+    @classmethod
+    def install(
+        cls,
+        issuer: str,
+        private_key: str,
+        public_key: PUBLIC_KEY_TYPES,
+        kid: str,
+    ):
+        yield cls(
+            issuer,
+            private_key,
+            public_key,
+            kid,
+        )
 
     def decode(self, token: str):
         return jwt.decode(

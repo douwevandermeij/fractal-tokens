@@ -27,14 +27,31 @@ def rsa_key_pair():
 
 
 @pytest.fixture
+def asymmetric_jwt_token_service(rsa_key_pair):
+    kid, private_key, public_key = rsa_key_pair
+
+    from fractal_tokens.services.jwt.asymmetric import AsymmetricJwtTokenService
+
+    yield next(
+        AsymmetricJwtTokenService.install(
+            issuer="test",
+            private_key=private_key,
+            public_key=public_key,
+        )
+    )
+
+
+@pytest.fixture
 def extended_asymmetric_jwt_token_service(rsa_key_pair):
     kid, private_key, public_key = rsa_key_pair
 
     from fractal_tokens.services.jwt.asymmetric import ExtendedAsymmetricJwtTokenService
 
-    yield ExtendedAsymmetricJwtTokenService(
-        issuer="test",
-        private_key=private_key,
-        public_key=public_key,
-        kid=kid,
+    yield next(
+        ExtendedAsymmetricJwtTokenService.install(
+            issuer="test",
+            private_key=private_key,
+            public_key=public_key,
+            kid=kid,
+        )
     )

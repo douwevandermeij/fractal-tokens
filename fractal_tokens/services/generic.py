@@ -54,7 +54,7 @@ class TokenService(Service):
         return payload
 
     @abstractmethod
-    def verify(self, token: str, *, typ: str):
+    def verify(self, token: str, *, typ: str = "access") -> dict:
         raise NotImplementedError
 
     @abstractmethod

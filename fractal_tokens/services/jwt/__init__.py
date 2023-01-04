@@ -11,7 +11,7 @@ class JwtTokenService(TokenService, ABC):
     def decode(self, token: str):
         raise NotImplementedError
 
-    def verify(self, token: str, *, typ: str):
+    def verify(self, token: str, *, typ: str = "access") -> dict:
         try:
             payload = self.decode(token)
         except ExpiredSignatureError:

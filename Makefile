@@ -8,7 +8,7 @@ coverage:  ## Run tests with coverage
 
 deps:  ## Install dependencies
 	python -m pip install --upgrade pip
-	python -m pip install black coverage cryptography flake8 flit isort mccabe mypy pylint pytest pytest-cov pytest-asyncio pytest-lazy-fixture python-jose tox tox-gh-actions types-python-jose pre-commit autoflake
+	python -m pip install black coverage cryptography flake8 flit isort mccabe mypy pylint pytest pytest-cov pytest-asyncio pytest-lazy-fixture pytest-mock python-jose tox tox-gh-actions types-python-jose pre-commit autoflake
 	pre-commit install
 
 lint:  ## Lint and static-check

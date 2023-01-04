@@ -14,9 +14,9 @@ class DummyJsonTokenService(TokenService):
     ) -> str:
         return json.dumps(payload)
 
-    def verify(self, token: str, *, typ: str):
+    def verify(self, token: str, *, typ: str = "access") -> dict:
         try:
-            return json.loads(token)
+            return self.decode(token)
         except Exception:
             raise TokenInvalidException()
 
