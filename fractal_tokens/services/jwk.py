@@ -1,6 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import List
 
 from fractal_tokens.services.generic import Service
 
@@ -13,20 +14,20 @@ class Jwk:
 
 class JwkService(Service, ABC):
     @abstractmethod
-    def get_jwks(self, issuer: str = "") -> list[Jwk]:
+    def get_jwks(self, issuer: str = "") -> List[Jwk]:
         raise NotImplementedError
 
 
 class LocalJwkService(JwkService):
-    def __init__(self, jwks: list[Jwk]):
+    def __init__(self, jwks: List[Jwk]):
         self.jwks = jwks
 
-    def get_jwks(self, issuer: str = "") -> list[Jwk]:
+    def get_jwks(self, issuer: str = "") -> List[Jwk]:
         return self.jwks
 
 
 class RemoteJwkService(JwkService):
-    def get_jwks(self, issuer: str = "") -> list[Jwk]:
+    def get_jwks(self, issuer: str = "") -> List[Jwk]:
         from urllib.request import (  # needs to be here to be able to mock in tests
             urlopen,
         )
@@ -36,10 +37,10 @@ class RemoteJwkService(JwkService):
 
 
 class AutomaticJwkService(JwkService):
-    def __init__(self, jwks: list[Jwk]):
+    def __init__(self, jwks: List[Jwk]):
         self.jwks = jwks
 
-    def get_jwks(self, issuer: str = "") -> list[Jwk]:
+    def get_jwks(self, issuer: str = "") -> List[Jwk]:
         if issuer.startswith("http"):
             return RemoteJwkService().get_jwks(issuer)
         else:
