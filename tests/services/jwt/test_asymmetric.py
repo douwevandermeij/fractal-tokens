@@ -16,7 +16,7 @@ def test_extended_asymmetric_ok(extended_asymmetric_jwt_token_service):
 def test_dummy_get_unverified_claims(extended_asymmetric_jwt_token_service):
     token = extended_asymmetric_jwt_token_service.generate({})
     claims = extended_asymmetric_jwt_token_service.get_unverified_claims(token)
-    assert set(claims.keys()) == {"exp", "iat", "iss", "jti", "nbf", "typ"}
+    assert set(claims.keys()) == {"iss", "sub", "exp", "nbf", "iat", "jti", "typ"}
     assert claims["typ"] == "access"
 
 

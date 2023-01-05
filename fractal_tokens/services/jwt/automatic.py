@@ -13,11 +13,14 @@ from fractal_tokens.settings import ACCESS_TOKEN_EXPIRATION_SECONDS
 
 
 class AutomaticJwtTokenService(JwtTokenService):
-    def __init__(self, issuer: str, secret: str, jwk_service: JwkService):
+    def __init__(
+        self, issuer: str, secret_key: str, jwk_service: JwkService, *args, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
         self.issuer = issuer
         self.symmetric_token_service = SymmetricJwtTokenService(
             issuer=issuer,
-            secret_key=secret,
+            secret_key=secret_key,
         )
         self.jwk_service = jwk_service
 
@@ -42,7 +45,7 @@ class AutomaticJwtTokenService(JwtTokenService):
     ) -> str:
         return self.symmetric_token_service.generate(payload, token_type, seconds_valid)
 
-    def decode(self, token: str):
+    def decode(self, token: str) -> dict:
         headers = jwt.get_unverified_headers(token)
         claims = jwt.get_unverified_claims(token)
         if headers["alg"] == "HS256":
@@ -63,5 +66,5 @@ class AutomaticJwtTokenService(JwtTokenService):
                     return asymmetric_token_service.decode(token)
         raise NotAllowedException("No permission!")
 
-    def get_unverified_claims(self, token: str):
+    def get_unverified_claims(self, token: str) -> dict:
         return jwt.get_unverified_claims(token)

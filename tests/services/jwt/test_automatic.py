@@ -16,7 +16,7 @@ def test_extended_asymmetric_automatic(
 def test_automatic_get_unverified_claims(automatic_jwt_token_service):
     token = automatic_jwt_token_service.generate({})
     claims = automatic_jwt_token_service.get_unverified_claims(token)
-    assert set(claims.keys()) == {"exp", "iat", "iss", "jti", "nbf", "typ"}
+    assert set(claims.keys()) == {"iss", "sub", "exp", "nbf", "iat", "jti", "typ"}
     assert claims["typ"] == "access"
 
 

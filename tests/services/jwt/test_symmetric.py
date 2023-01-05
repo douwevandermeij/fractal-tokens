@@ -14,7 +14,7 @@ def test_symmetric_default_10_mins_valid(symmetric_jwt_token_service):
     token = symmetric_jwt_token_service.generate({}, seconds_valid=0)
     payload = symmetric_jwt_token_service.verify(token)
 
-    assert payload["exp"] - payload["iat"] == ACCESS_TOKEN_EXPIRATION_SECONDS
+    assert payload.exp - payload.iat == ACCESS_TOKEN_EXPIRATION_SECONDS
 
 
 def test_symmetric_default_1_day_valid(symmetric_jwt_token_service):
@@ -25,13 +25,13 @@ def test_symmetric_default_1_day_valid(symmetric_jwt_token_service):
     )
     payload = symmetric_jwt_token_service.verify(token, typ="refresh")
 
-    assert payload["exp"] - payload["iat"] == REFRESH_TOKEN_EXPIRATION_SECONDS
+    assert payload.exp - payload.iat == REFRESH_TOKEN_EXPIRATION_SECONDS
 
 
 def test_symmetric_get_unverified_claims(symmetric_jwt_token_service):
     token = symmetric_jwt_token_service.generate({})
     claims = symmetric_jwt_token_service.get_unverified_claims(token)
-    assert set(claims.keys()) == {"exp", "iat", "iss", "jti", "nbf", "typ"}
+    assert set(claims.keys()) == {"iss", "sub", "exp", "nbf", "iat", "jti", "typ"}
     assert claims["typ"] == "access"
 
 

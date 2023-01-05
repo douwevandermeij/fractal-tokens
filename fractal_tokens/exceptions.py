@@ -18,3 +18,7 @@ class TokenExpiredException(Exception):
 
 class NotAllowedException(Exception):
     ...
+
+
+class InvalidPayloadException(Exception):
+    ...

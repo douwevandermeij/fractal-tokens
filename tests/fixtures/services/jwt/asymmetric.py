@@ -6,7 +6,7 @@ import pytest
 @pytest.fixture
 def rsa_key_pair():
     from cryptography.hazmat.backends import default_backend
-    from cryptography.hazmat.primitives import serialization as crypto_serialization
+    from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.primitives.asymmetric import rsa
 
     key = rsa.generate_private_key(
@@ -16,9 +16,9 @@ def rsa_key_pair():
     )
 
     private_key = key.private_bytes(
-        crypto_serialization.Encoding.PEM,
-        crypto_serialization.PrivateFormat.PKCS8,
-        crypto_serialization.NoEncryption(),
+        serialization.Encoding.PEM,
+        serialization.PrivateFormat.PKCS8,
+        serialization.NoEncryption(),
     ).decode("utf-8")
 
     kid = str(uuid.uuid4())

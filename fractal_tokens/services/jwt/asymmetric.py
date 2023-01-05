@@ -1,4 +1,4 @@
-from cryptography.hazmat.primitives import serialization as crypto_serialization
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.types import PUBLIC_KEY_TYPES
 from jose import jwt
 
@@ -7,12 +7,20 @@ from fractal_tokens.settings import ACCESS_TOKEN_EXPIRATION_SECONDS
 
 
 class AsymmetricJwtTokenService(JwtTokenService):
-    def __init__(self, issuer: str, private_key: str, public_key: PUBLIC_KEY_TYPES):
+    def __init__(
+        self,
+        issuer: str,
+        private_key: str,
+        public_key: PUBLIC_KEY_TYPES,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
         self.issuer = issuer
         self.private_key = private_key
         self.public_key = public_key.public_bytes(
-            crypto_serialization.Encoding.PEM,
-            crypto_serialization.PublicFormat.SubjectPublicKeyInfo,
+            serialization.Encoding.PEM,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
         ).decode("utf-8")
         self.algorithm = "RS256"
 
@@ -32,19 +40,30 @@ class AsymmetricJwtTokenService(JwtTokenService):
             algorithm=self.algorithm,
         )
 
-    def decode(self, token: str):
-        return jwt.decode(token, self.public_key, algorithms=self.algorithm)
+    def decode(self, token: str) -> dict:
+        return jwt.decode(
+            token,
+            self.public_key,
+            algorithms=self.algorithm,
+            issuer=self.issuer,
+        )
 
-    def get_unverified_claims(self, token: str):
+    def get_unverified_claims(self, token: str) -> dict:
         return jwt.get_unverified_claims(token)
 
 
 class ExtendedAsymmetricJwtTokenService(AsymmetricJwtTokenService):
     def __init__(
-        self, issuer: str, private_key: str, public_key: PUBLIC_KEY_TYPES, kid: str
+        self,
+        issuer: str,
+        private_key: str,
+        public_key: PUBLIC_KEY_TYPES,
+        kid: str,
+        *args,
+        **kwargs,
     ):
         super(ExtendedAsymmetricJwtTokenService, self).__init__(
-            issuer, private_key, public_key
+            issuer, private_key, public_key, *args, **kwargs
         )
         self.kid = kid
 
@@ -61,14 +80,6 @@ class ExtendedAsymmetricJwtTokenService(AsymmetricJwtTokenService):
             private_key,
             public_key,
             kid,
-        )
-
-    def decode(self, token: str):
-        return jwt.decode(
-            token,
-            self.public_key,
-            algorithms=self.algorithm,
-            issuer=self.issuer,
         )
 
     def generate(

@@ -27,21 +27,25 @@ class LocalJwkService(JwkService):
 
 
 class RemoteJwkService(JwkService):
+    def __init__(self, endpoint: str = "/public/keys"):
+        self.endpoint = endpoint
+
     def get_jwks(self, issuer: str = "") -> List[Jwk]:
         from urllib.request import (  # needs to be here to be able to mock in tests
             urlopen,
         )
 
-        jsonurl = urlopen(f"{issuer}/public/keys")
+        jsonurl = urlopen(f"{issuer}{self.endpoint}")
         return [Jwk(**k) for k in json.loads(jsonurl.read())]
 
 
 class AutomaticJwkService(JwkService):
-    def __init__(self, jwks: List[Jwk]):
+    def __init__(self, jwks: List[Jwk], endpoint: str = "/public/keys"):
         self.jwks = jwks
+        self.endpoint = endpoint
 
     def get_jwks(self, issuer: str = "") -> List[Jwk]:
         if issuer.startswith("http"):
-            return RemoteJwkService().get_jwks(issuer)
+            return RemoteJwkService(self.endpoint).get_jwks(issuer)
         else:
             return LocalJwkService(self.jwks).get_jwks(issuer)

@@ -7,7 +7,7 @@ from fractal_tokens.services.jwk import Jwk
 def local_jwk_service(rsa_key_pair):
     kid, private_key, public_key = rsa_key_pair
 
-    from cryptography.hazmat.primitives import serialization as crypto_serialization
+    from cryptography.hazmat.primitives import serialization
 
     from fractal_tokens.services.jwk import LocalJwkService
 
@@ -16,8 +16,8 @@ def local_jwk_service(rsa_key_pair):
             Jwk(
                 id=kid,
                 public_key=public_key.public_bytes(
-                    crypto_serialization.Encoding.PEM,
-                    crypto_serialization.PublicFormat.SubjectPublicKeyInfo,
+                    serialization.Encoding.PEM,
+                    serialization.PublicFormat.SubjectPublicKeyInfo,
                 ).decode("utf-8"),
             )
         ]
@@ -42,7 +42,7 @@ def remote_jwk_service():
 def automatic_jwk_service(rsa_key_pair):
     kid, private_key, public_key = rsa_key_pair
 
-    from cryptography.hazmat.primitives import serialization as crypto_serialization
+    from cryptography.hazmat.primitives import serialization
 
     from fractal_tokens.services.jwk import AutomaticJwkService
 
@@ -51,8 +51,8 @@ def automatic_jwk_service(rsa_key_pair):
             Jwk(
                 id=kid,
                 public_key=public_key.public_bytes(
-                    crypto_serialization.Encoding.PEM,
-                    crypto_serialization.PublicFormat.SubjectPublicKeyInfo,
+                    serialization.Encoding.PEM,
+                    serialization.PublicFormat.SubjectPublicKeyInfo,
                 ).decode("utf-8"),
             )
         ]
