@@ -42,7 +42,7 @@ def asymmetric_jwt_token_service(rsa_key_pair):
 
 
 @pytest.fixture
-def extended_asymmetric_jwt_token_service(rsa_key_pair):
+def extended_asymmetric_jwt_token_service(rsa_key_pair, automatic_jwk_service):
     kid, private_key, public_key = rsa_key_pair
 
     from fractal_tokens.services.jwt.asymmetric import ExtendedAsymmetricJwtTokenService
@@ -51,7 +51,35 @@ def extended_asymmetric_jwt_token_service(rsa_key_pair):
         ExtendedAsymmetricJwtTokenService.install(
             issuer="test",
             private_key=private_key,
-            public_key=public_key,
             kid=kid,
+            jwk_service=automatic_jwk_service,
         )
     )
+
+
+@pytest.fixture
+def asymmetric_jwt_token_service_no_private_key(asymmetric_jwt_token_service):
+    asymmetric_jwt_token_service.private_key = ""
+    yield asymmetric_jwt_token_service
+
+
+@pytest.fixture
+def asymmetric_jwt_token_service_no_public_key(asymmetric_jwt_token_service):
+    asymmetric_jwt_token_service.public_key = ""
+    yield asymmetric_jwt_token_service
+
+
+@pytest.fixture
+def extended_asymmetric_jwt_token_service_no_private_key(
+    extended_asymmetric_jwt_token_service,
+):
+    extended_asymmetric_jwt_token_service.private_key = ""
+    yield extended_asymmetric_jwt_token_service
+
+
+@pytest.fixture
+def extended_asymmetric_jwt_token_service_no_jwk_service(
+    extended_asymmetric_jwt_token_service,
+):
+    extended_asymmetric_jwt_token_service.jwk_service = None
+    yield extended_asymmetric_jwt_token_service

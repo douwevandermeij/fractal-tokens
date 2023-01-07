@@ -41,11 +41,11 @@ class RemoteJwkService(JwkService):
 
 class AutomaticJwkService(JwkService):
     def __init__(self, jwks: List[Jwk], endpoint: str = "/public/keys"):
-        self.jwks = jwks
-        self.endpoint = endpoint
+        self.local_jwk_service = LocalJwkService(jwks)
+        self.remote_jwk_service = RemoteJwkService(endpoint)
 
     def get_jwks(self, issuer: str = "") -> List[Jwk]:
         if issuer.startswith("http"):
-            return RemoteJwkService(self.endpoint).get_jwks(issuer)
+            return self.remote_jwk_service.get_jwks(issuer)
         else:
-            return LocalJwkService(self.jwks).get_jwks(issuer)
+            return self.local_jwk_service.get_jwks(issuer)

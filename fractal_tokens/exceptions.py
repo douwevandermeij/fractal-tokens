@@ -22,3 +22,11 @@ class NotAllowedException(Exception):
 
 class InvalidPayloadException(Exception):
     ...
+
+
+class NoPrivateKeyException(Exception):
+    ...
+
+
+class NoPublicKeyException(Exception):
+    ...

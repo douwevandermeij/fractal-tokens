@@ -1,7 +1,5 @@
 import pytest
 
-from fractal_tokens.exceptions import TokenExpiredException, TokenInvalidException
-
 
 def test_symmetric_ok(symmetric_jwt_token_service):
     token = symmetric_jwt_token_service.generate({})
@@ -37,11 +35,15 @@ def test_symmetric_get_unverified_claims(symmetric_jwt_token_service):
 
 def test_symmetric_expired(symmetric_jwt_token_service):
     token = symmetric_jwt_token_service.generate({}, seconds_valid=-1)
+    from fractal_tokens.exceptions import TokenExpiredException
+
     with pytest.raises(TokenExpiredException):
         symmetric_jwt_token_service.verify(token)
 
 
 def test_symmetric_verify_wrong_typ(symmetric_jwt_token_service):
     token = symmetric_jwt_token_service.generate({})
+    from fractal_tokens.exceptions import TokenInvalidException
+
     with pytest.raises(TokenInvalidException):
         symmetric_jwt_token_service.verify(token, typ="refresh")

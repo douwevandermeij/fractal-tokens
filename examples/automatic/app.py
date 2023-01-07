@@ -49,7 +49,9 @@ if __name__ == "__main__":
         issuer="example", private_key=private_key, public_key=public_key
     )
     extended_asymmetric_token_service = ExtendedAsymmetricJwtTokenService(
-        issuer="example", private_key=private_key, public_key=public_key, kid=kid
+        issuer="example",
+        private_key=private_key,
+        kid=kid,
     )
     automatic_token_service = AutomaticJwtTokenService(
         issuer="example", secret_key=secret_key, jwk_service=jwk_service

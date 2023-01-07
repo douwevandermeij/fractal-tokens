@@ -112,6 +112,7 @@ This may happen when one of the two microservices gets a change regarding the pa
 
 It is a good habit to make at least some constraints around the token payload structure and the TokenPayload object may be of help here.
 By default, the TokenPayload just contains default JWT claims and a custom claim `typ` (type of token).
+A JWT is a JSON Web Token (https://www.rfc-editor.org/rfc/rfc7519) that holds certain claims to be transferred between different applications/services.
 
 ```python
 @dataclass
@@ -177,18 +178,246 @@ token_service = DummyJsonTokenService(TokenPayloadRoles)
 payload = token_service.verify(token)
 ```
 
-### Symmetric TokenService
+The roles themselves can also be verified, but that's out of scope for the TokenService.
+For more information on how to validate roles, please check out the [**Fractal Roles**](https://github.com/douwevandermeij/fractal-roles) package.
 
-TODO
+### Symmetric JWT TokenService
 
-### Asymmetric TokenService
+Symmetric encryption means that the key that is used to encrypt/generate a token, should be the same key that should be used to decrypt/validate the token.
+This key should be secret because when someone gets hold of the key, he can not only decrypt/validate tokens, but also encrypt/generate new ones.
+Any consumer needs to know the secret key to be able to validate tokens. This could be a security risk.
 
-TODO
+However, if security of the secret key is covered, symmetric encryption is a viable solution for JWT tokens and can be used as follows:
 
-### Automatic TokenService
+```python
+token_service = SymmetricJwtTokenService(issuer="example", secret_key="**SECRET**")
 
-TODO
+token = token_service.generate(
+    {
+        "sub": str(uuid.uuid4()),  # any subject
+    }
+)
+
+payload = token_service.verify(token)
+```
+
+Similar to the dummy TokenService, also the symmetric TokenService supports custom claims:
+
+```python
+token_service = SymmetricJwtTokenService(issuer="example", secret_key="**SECRET**", token_payload_cls=TokenPayloadRoles)
+```
+
+### Asymmetric JWT TokenService
+
+Asymmetric encryption means that there are two keys, a private one and a public one, that can be used to respectively encrypt/generate and decrypt/validate tokens.
+The private key should be kept secret, but the public key doesn't have to be kept secret because it cannot be used to encrypt/generate new tokens, it can only be used to decrypt/validate.
+This is useful, because this way any consumer can validate a token without knowing the secret/private key. This is different from symmetric encryption.
+
+To be able to use asymmetric encryption, you need to have or generate a public/private key pair using the [RSA algorithm](https://en.wikipedia.org/wiki/RSA_(cryptosystem)).
+In Python this can be accomplished as follows:
+
+```python
+def rsa_key_pair():
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+
+    key = rsa.generate_private_key(
+        backend=default_backend(),
+        public_exponent=65537,
+        key_size=4096,  # use at least 4096 in production
+    )
+
+    private_key = key.private_bytes(
+        serialization.Encoding.PEM,
+        serialization.PrivateFormat.PKCS8,
+        serialization.NoEncryption(),
+    ).decode("utf-8")
+
+    return private_key, key.public_key()
+```
+
+Having the public/private key pair, the asymmetric TokenService can be used as follows:
+
+```python
+private_key, public_key = rsa_key_pair()
+token_service = AsymmetricJwtTokenService(
+    issuer="example", private_key=private_key, public_key=public_key
+)
+
+token = token_service.generate(
+    {
+        "sub": str(uuid.uuid4()),  # any subject
+    }
+)
+
+payload = token_service.verify(token)
+```
+
+Similar to the dummy TokenService, also the asymmetric TokenService supports custom claims:
+
+```python
+token_service = AsymmetricJwtTokenService(
+    issuer="example", private_key=private_key, public_key=public_key, token_payload_cls=TokenPayloadRoles
+)
+```
+
+#### Extended Asymmetric JWT TokenService
+
+When using asymmetric encryption, where the public key can be shared with other applications, this enables a lot of possibilities.
+For example, a consuming applications can have a list of public keys from several different token generating services, using different private keys.
+Also, a token generating service may change to a different private key, for any reason.
+When multiple public/private key pairs are in play, it is useful to know which private key has been used to generate the token,
+to be able to pick the correct/corresponding public key to validate the token.
+To do this, the public/private key pair can be annotated with a **key ID** and can be included in the header of the JWT token.
+
+The `ExtendedAsymmetricJwtTokenService` is similar to the regular `AsymmetricJwtTokenService`, but adds a `kid` (key ID) to the header of the JWT token.
+This `kid` refers to a generated key pair (public/private key).
+
+```python
+private_key, public_key = rsa_key_pair()
+kid = str(uuid.uuid4())
+token_service = ExtendedAsymmetricJwtTokenService(
+    issuer="example",
+    private_key=private_key,
+    public_key=public_key,
+    kid=kid,
+)
+```
+
+In the code above an example is shown for generating asymmetric tokens having a `kid` in the header.
+While this code can also be used to validate these tokens, this isn't common since the consuming application most probably doesn't know the private key.
+
+A consuming application would use the following code to validate tokens with a `kid`:
+
+```python
+headers = jwt.get_unverified_headers(token)
+kid = headers.get("kid", None)
+public_key_str = find_public_key(kid)  # find public key from a registry using `kid`
+
+public_key = serialization.load_pem_public_key(
+    public_key_str.encode("utf-8"), backend=default_backend()
+)
+token_service = AsymmetricJwtTokenService(
+    issuer="example",
+    private_key="",  # unknown
+    public_key=public_key,
+)
+
+token_service.verify(token)
+```
+
+Note that we first need to fetch the `kid` from the header and then do a lookup in a registry to find the public key corresponding to the `kid`.
+Once we have the public key, we can just use a regular `AsymmetricJwtTokenService` to validate the token, providing the public key.
+However, the function `find_public_key(kid)` is not implemented in this example. For this, Fractal Tokens comes with a JWK service.
+
+Also note that this TokenService cannot be used to generate new tokens, as the private key is unknown (or just an empty string).
+If you still try to do so, the TokenService will raise an exception.
 
 #### JWK Service
 
-TODO
+A JWK is a JSON Web Key (https://www.rfc-editor.org/rfc/rfc7517) that refers to a specific encryption key (pair).
+The JWK service holds, or interfaces with, a registry with public keys and their respective key IDs.
+For a local registry the `LocalJwkService` can be used. The `LocalJwkService` contains an in-memory list of `Jwk` objects.
+
+```python
+@dataclass
+class Jwk:
+    id: str
+    public_key: str
+```
+
+Creating a `LocalJwkService` would go as follows:
+
+```python
+private_key, public_key = rsa_key_pair()
+
+jwk_service = LocalJwkService(
+    [
+        Jwk(
+            id=kid,
+            public_key=public_key.public_bytes(
+                serialization.Encoding.PEM,
+                serialization.PublicFormat.SubjectPublicKeyInfo,
+            ).decode("utf-8"),
+        )
+    ]
+)
+```
+
+Using it in the `ExtendedAsymmetricJwtTokenService` would go as follows:
+
+```python
+token_service = ExtendedAsymmetricJwtTokenService(
+    issuer="",
+    private_key="",
+    kid="",
+    jwk_service=jwk_service,
+)
+```
+
+This TokenService is intended to be used _only_ to validate tokens. It cannot generate new tokens since it doesn't know any private key,
+nor kid and therefore the issuer is also not relevant. Hence, these three parameters are empty strings.
+
+When verifying a token with this TokenService, it will look up the `kid` from the token header and find a public key corresponding to the `kid`.
+
+So just call:
+
+```python
+token_service.verify(token)
+```
+
+When all is fine a payload will be returned. When no public key can be found by `kid`, or `kid` is not present in the token header,
+a `NotAllowedException` will be raised.
+
+It might well be that the public key is invalidated/deleted in order to block all access from certain private key.
+For example in the case of a security breach.
+
+This might not be happening a lot in case of a `LocalJwkService`, but with a `RemoteJwkService` this makes more sense,
+as the public keys are managed in a separate remote service or application.
+
+The `RemoteJwkService` opens an HTTP GET request on a certain endpoint upon calling `get_jwks(...)` on the JWK service.
+By default, the `RemoteJwkService` assumes the endpoint will be `/public/keys` on a certain host, and the host is assumed to be in the `iss` (issuer) claim of the token.
+The `iss` claim in the token to validate, should then start with (at least) `http`.
+
+Because you can't know beforehand if a token to validate contains a host in the `iss` claim, you can also use the `AutomaticJwkService`
+which will check for the issuer to be a host or not and select the `RemoteJwkService` or `LocalJwkService` respectively.
+
+```python
+private_key, public_key = rsa_key_pair()
+
+jwk_service = AutomaticJwkService(
+    [
+        Jwk(
+            id=kid,
+            public_key=public_key.public_bytes(
+                serialization.Encoding.PEM,
+                serialization.PublicFormat.SubjectPublicKeyInfo,
+            ).decode("utf-8"),
+        )
+    ]
+)
+```
+
+### Automatic JWT TokenService
+
+To be fully resilient for multiple types of tokens coming at your consuming application, you can use the `AutomaticJwtTokenService`.
+
+```python
+token_service = AutomaticJwtTokenService(
+    issuer="example", secret_key=secret_key, jwk_service=jwk_service
+)
+```
+
+You can supply it with a symmetric secret key and a JWK service.
+
+An `AutomaticJwtTokenService` cannot be used for generating tokens. Token generation requires an explicit chosen TokenService to do so.
+
+#### How does it work?
+
+First, based on the algorithm used, which can be found in the `alg` claim of the token, either the `SymmetricJwtTokenService` or an `AsymmetricJwtTokenService` will be used.
+Based on the `kid` claim to be available in the token header the regular `AsymmetricJwtTokenService` will be used (in case of no `kid` claim) or the `ExtendedAsymmetricJwtTokenService` will be used.
+The `ExtendedAsymmetricJwtTokenService` can be using an `AutomaticJwkService`, so even if the token contains a `kid` claim, it can still contain a `iss` claim which not represents a host.
+
+This doesn't guarantee all tokens can be validated of course, it still depends on the right public key(s) and/or secret key to be available upon validating a token.
+But of course this is the whole essence of security.
