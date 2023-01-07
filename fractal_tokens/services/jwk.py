@@ -3,8 +3,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List
 
-from fractal_tokens.services.generic import Service
-
 
 @dataclass
 class Jwk:
@@ -12,7 +10,7 @@ class Jwk:
     public_key: str
 
 
-class JwkService(Service, ABC):
+class JwkService(ABC):
     @abstractmethod
     def get_jwks(self, issuer: str = "") -> List[Jwk]:
         raise NotImplementedError

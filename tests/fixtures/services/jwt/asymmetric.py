@@ -32,12 +32,10 @@ def asymmetric_jwt_token_service(rsa_key_pair):
 
     from fractal_tokens.services.jwt.asymmetric import AsymmetricJwtTokenService
 
-    yield next(
-        AsymmetricJwtTokenService.install(
-            issuer="test",
-            private_key=private_key,
-            public_key=public_key,
-        )
+    yield AsymmetricJwtTokenService(
+        issuer="test",
+        private_key=private_key,
+        public_key=public_key,
     )
 
 
@@ -47,13 +45,11 @@ def extended_asymmetric_jwt_token_service(rsa_key_pair, automatic_jwk_service):
 
     from fractal_tokens.services.jwt.asymmetric import ExtendedAsymmetricJwtTokenService
 
-    yield next(
-        ExtendedAsymmetricJwtTokenService.install(
-            issuer="test",
-            private_key=private_key,
-            kid=kid,
-            jwk_service=automatic_jwk_service,
-        )
+    yield ExtendedAsymmetricJwtTokenService(
+        issuer="test",
+        private_key=private_key,
+        kid=kid,
+        jwk_service=automatic_jwk_service,
     )
 
 

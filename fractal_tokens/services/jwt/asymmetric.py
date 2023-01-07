@@ -36,10 +36,6 @@ class AsymmetricJwtTokenService(JwtTokenService):
         )
         self.algorithm = "RS256"
 
-    @classmethod
-    def install(cls, *args, **kwargs):
-        yield cls(*args, **kwargs)
-
     def generate(
         self,
         payload: dict,
@@ -87,21 +83,6 @@ class ExtendedAsymmetricJwtTokenService(AsymmetricJwtTokenService):
         )
         self.kid = kid
         self.jwk_service = jwk_service
-
-    @classmethod
-    def install(
-        cls,
-        issuer: str,
-        private_key: str,
-        kid: str,
-        jwk_service: Optional[JwkService] = None,
-    ):
-        yield cls(
-            issuer,
-            private_key,
-            kid,
-            jwk_service,
-        )
 
     def generate(
         self,

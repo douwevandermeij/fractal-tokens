@@ -42,19 +42,6 @@ class AutomaticJwtTokenService(JwtTokenService):
             jwk_service=jwk_service,
         )
 
-    @classmethod
-    def install(
-        cls,
-        issuer: str,
-        secret_key: str,
-        jwk_service: JwkService,
-    ):
-        yield cls(
-            issuer,
-            secret_key,
-            jwk_service,
-        )
-
     def generate(
         self,
         payload: Dict,

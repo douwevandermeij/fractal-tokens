@@ -417,7 +417,7 @@ An `AutomaticJwtTokenService` cannot be used for generating tokens. Token genera
 
 First, based on the algorithm used, which can be found in the `alg` claim of the token, either the `SymmetricJwtTokenService` or an `AsymmetricJwtTokenService` will be used.
 Based on the `kid` claim to be available in the token header the regular `AsymmetricJwtTokenService` will be used (in case of no `kid` claim) or the `ExtendedAsymmetricJwtTokenService` will be used.
-The `ExtendedAsymmetricJwtTokenService` can be using an `AutomaticJwkService`, so even if the token contains a `kid` claim, it can still contain a `iss` claim which not represents a host.
+The `ExtendedAsymmetricJwtTokenService` can be using an `AutomaticJwkService`, so even if the token contains a `kid` claim, it can still contain an `iss` claim which not represents a host.
 
 This doesn't guarantee all tokens can be validated of course, it still depends on the right public key(s) and/or secret key to be available upon validating a token.
 But of course this is the whole essence of security.

@@ -1,5 +1,5 @@
 import uuid
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from calendar import timegm
 from dataclasses import asdict, dataclass
 from datetime import datetime
@@ -10,17 +10,6 @@ from fractal_tokens.settings import (
     ACCESS_TOKEN_EXPIRATION_SECONDS,
     REFRESH_TOKEN_EXPIRATION_SECONDS,
 )
-
-
-class Service(
-    ABC
-):  # TODO copied from fractal-toolkit until services are extracted to separate package
-    @classmethod
-    def install(cls, *args, **kwargs):
-        yield cls()
-
-    def is_healthy(self) -> bool:
-        return True
 
 
 @dataclass
@@ -34,7 +23,7 @@ class TokenPayload:
     typ: str  # Type of token (custom)
 
 
-class TokenService(Service):
+class TokenService:
     def __init__(self, token_payload_cls: Type[TokenPayload] = TokenPayload):
         self.token_payload_cls = token_payload_cls
 

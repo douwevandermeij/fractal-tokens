@@ -13,13 +13,6 @@ class SymmetricJwtTokenService(JwtTokenService):
         self.secret_key = secret_key
         self.algorithm = "HS256"
 
-    @classmethod
-    def install(cls, issuer: str, secret_key: str):
-        yield cls(
-            issuer,
-            secret_key,
-        )
-
     def generate(
         self,
         payload: Dict,
