@@ -4,7 +4,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from jose import jwt
 
-from fractal_tokens.exceptions import NotAllowedException
+from fractal_tokens.exceptions import NotAllowedException, NotImplementedException
 from fractal_tokens.services.jwk import JwkService
 from fractal_tokens.services.jwt import JwtTokenService
 from fractal_tokens.services.jwt.asymmetric import (
@@ -48,7 +48,9 @@ class AutomaticJwtTokenService(JwtTokenService):
         token_type: str = "access",
         seconds_valid: int = ACCESS_TOKEN_EXPIRATION_SECONDS,
     ) -> str:
-        raise NotImplementedError
+        raise NotImplementedException(
+            "Not able to generate tokens with this TokenService"
+        )
 
     def decode(self, token: str) -> dict:
         headers = jwt.get_unverified_headers(token)

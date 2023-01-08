@@ -3,13 +3,20 @@ from abc import abstractmethod
 from calendar import timegm
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Type
+from typing import Generic, Optional, Protocol, Type, TypeVar
 
 from fractal_tokens.exceptions import InvalidPayloadException
 from fractal_tokens.settings import (
     ACCESS_TOKEN_EXPIRATION_SECONDS,
     REFRESH_TOKEN_EXPIRATION_SECONDS,
 )
+
+
+class Dataclass(Protocol):
+    __dataclass_fields__: dict
+
+
+TokenPayloadClass = TypeVar("TokenPayloadClass", bound=Dataclass)
 
 
 @dataclass
@@ -23,9 +30,14 @@ class TokenPayload:
     typ: str  # Type of token (custom)
 
 
-class TokenService:
-    def __init__(self, token_payload_cls: Type[TokenPayload] = TokenPayload):
-        self.token_payload_cls = token_payload_cls
+class TokenService(Generic[TokenPayloadClass]):
+    token_payload_cls: Type[TokenPayload]
+
+    def __init__(self, token_payload_cls: Optional[Type[TokenPayload]] = None):
+        if not hasattr(self, "token_payload_cls"):
+            if not token_payload_cls:
+                token_payload_cls = TokenPayload
+            self.token_payload_cls = token_payload_cls
 
     @abstractmethod
     def generate(
@@ -70,7 +82,7 @@ class TokenService:
         return payload
 
     @abstractmethod
-    def verify(self, token: str, *, typ: str = "access") -> TokenPayload:
+    def verify(self, token: str, *, typ: str = "access") -> TokenPayloadClass:
         raise NotImplementedError
 
     @abstractmethod

@@ -30,3 +30,7 @@ class NoPrivateKeyException(Exception):
 
 class NoPublicKeyException(Exception):
     ...
+
+
+class NotImplementedException(Exception):
+    ...

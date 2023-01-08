@@ -56,3 +56,10 @@ def test_automatic_wrong_algorithm(
     token = symmetric_jwt_token_service.generate({})
     with pytest.raises(NotAllowedException):
         automatic_jwt_token_service.verify(token)
+
+
+def test_automatic_generate(automatic_jwt_token_service):
+    from fractal_tokens.exceptions import NotImplementedException
+
+    with pytest.raises(NotImplementedException):
+        automatic_jwt_token_service.generate({})
