@@ -421,3 +421,122 @@ The `ExtendedAsymmetricJwtTokenService` can be using an `AutomaticJwkService`, s
 
 This doesn't guarantee all tokens can be validated of course, it still depends on the right public key(s) and/or secret key to be available upon validating a token.
 But of course this is the whole essence of security.
+
+### FastAPI implementation
+
+Since Fractal Tokens is designed in a generic way, it can be easily integrated in your FastAPI applications.
+You can find the full example on a FastAPI demo in the examples in this repository.
+
+We will make use of FastAPI's dependency injection system to verify tokens.
+
+A protected view may look like this:
+
+```python
+@app.get("/protected")
+def protected(
+    payload: TokenPayload = Depends(get_token_payload(token_service=token_service)),
+):
+    return {"Protected": "Data", "TokenPayload": payload}
+```
+
+A more complete example:
+
+```python
+from fastapi import Depends, FastAPI
+from fractal_tokens.services.generic import TokenPayload
+from fractal_tokens.services.jwt.asymmetric import AsymmetricJwtTokenService
+
+from fastapi_demo.utils import get_token_payload, rsa_key_pair
+
+app = FastAPI()
+
+# key pair will renew everytime you restart the app, store externally to reuse
+private_key, public_key = rsa_key_pair()
+
+token_service = AsymmetricJwtTokenService(
+    issuer="example", private_key=private_key, public_key=public_key
+)
+
+
+@app.get("/protected")
+def protected(
+    payload: TokenPayload = Depends(get_token_payload(token_service=token_service)),
+):
+    return {"Protected": "Data", "TokenPayload": payload}
+```
+
+The most important function here is `get_token_payload`. This dependency will be injected by FastAPI upon calling this function/endpoint.
+
+The `get_token_payload` could be implemented as follows:
+
+```python
+from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
+
+from fractal_tokens.services.generic import TokenPayload, TokenService
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
+
+def get_token_payload(
+    *,
+    token_service: TokenService,
+    typ: str = "access",
+):
+    def _get_payload(token: str = Depends(oauth2_scheme)) -> TokenPayload:
+        return token_service.verify(token, typ=typ)
+
+    return _get_payload
+```
+
+The trick is of course calling `verify` on the `token_service`.
+
+```python
+return token_service.verify(token, typ=typ)
+```
+
+#### Including Roles Verification
+
+I mentioned `get_token_payload` _could_ be implemented like this, because variations or extensions are also possible.
+Consider validating roles, as provided in the [**Fractal Roles**](https://github.com/douwevandermeij/fractal-roles) package.
+
+Using Fractal Tokens together with Fractal Roles could result in a function like this:
+
+```python
+def get_token_payload_roles(
+    *,
+    token_service: TokenService,
+    roles_service: BaseRolesService,
+    endpoint: str = "",
+    method: str = "get",
+    typ: str = "access",
+):
+    def _get_payload(token: str = Depends(oauth2_scheme)) -> TokenPayloadRoles:
+        payload = token_service.verify(token, typ=typ)
+        payload = roles_service.verify(payload, endpoint, method)
+        return payload
+
+    return _get_payload
+```
+
+Notice the `roles_service` next to the `token_service` and the roles verification `roles_service.verify(payload, endpoint, method)`.
+
+The protected view in this case may look like this:
+
+```python
+@app.get("/protected")
+def protected(
+    payload: TokenPayloadRoles = Depends(
+        get_token_payload_roles(
+            token_service=token_service,
+            roles_service=roles_service,
+            endpoint="protected",
+            method="get",
+        )
+    ),
+):
+    return {"Protected": "Data", "TokenPayload": payload}
+```
+Checkout the examples for a more complete overview of using FastAPI with Fractal Tokens and Fractal Roles.
+
+For more information on how to validate roles, please check out the [**Fractal Roles**](https://github.com/douwevandermeij/fractal-roles) package.
