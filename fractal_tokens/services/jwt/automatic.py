@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -17,7 +17,13 @@ from fractal_tokens.settings import ACCESS_TOKEN_EXPIRATION_SECONDS
 
 class AutomaticJwtTokenService(JwtTokenService):
     def __init__(
-        self, issuer: str, secret_key: str, jwk_service: JwkService, *args, **kwargs
+        self,
+        issuer: str,
+        secret_key: str,
+        jwk_service: JwkService,
+        options: Optional[dict] = None,
+        *args,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.issuer = issuer
@@ -34,12 +40,14 @@ class AutomaticJwtTokenService(JwtTokenService):
             issuer=issuer,
             private_key="",
             public_key=public_key,
+            options=options,
         )
         self.extended_asymmetric_token_service = ExtendedAsymmetricJwtTokenService(
             issuer=issuer,
             private_key="",
             kid="",
             jwk_service=jwk_service,
+            options=options,
         )
 
     def generate(
