@@ -136,6 +136,23 @@ The JWT library by design, will confirm the supplied audience value (the consume
 
 If you want to use the `aud` claim anyway, you need to extend the TokenPayload with a "custom" claim.
 
+##### Auth0 implementation of `aud` claim
+
+[Auth0](https://auth0.com), one of the leading authentication platform service providers, says the `aud` claim can be used for the recipients
+audience of the token ([source](https://community.auth0.com/t/what-is-the-audience/71414)). However, when you define an
+"application" in the Auth0 backend, they already provide a so-called "Client ID", which will be put in the `aud` claim.
+You now have to copy/paste this "Client ID" in your own software, so you can use it as `aud` claim input to validate tokens.
+
+While this of course works fine, in essence the implementation like this is similar to the `iss` (Issuer) claim; it's the
+token generating service that defines the "Client ID" and it can be reused multiple times in different consuming applications.
+The token generating service doesn't know anything about the actual consuming applications.
+
+Ideally, you would have to register each consuming application with a unique identifier in Auth0.
+Perhaps the decision makers at Auth0 decided that this would be too much of a burden for their customers, especially to have to
+implement something in every application to generate a unique identifier, plus the (prone to be outdated) registry in their backend, so they decided
+to turn it around and already provide a unique identifier. Now it's up to their customers to use the "Client ID" in a single application only.
+This is most probably also the reason why you have to define "applications" in Auth0 in the first place.
+
 #### Additional custom claims
 
 While the TokenPayload object is already quite usefull, it can be extended with more custom claims.

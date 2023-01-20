@@ -20,6 +20,7 @@ class AsymmetricJwtTokenService(JwtTokenService):
         issuer: str,
         private_key: str,
         public_key: Optional[PUBLIC_KEY_TYPES] = None,
+        options: Optional[dict] = None,
         *args,
         **kwargs,
     ):
@@ -34,6 +35,7 @@ class AsymmetricJwtTokenService(JwtTokenService):
             if public_key
             else ""
         )
+        self.options = options if options else {}
         self.algorithm = "RS256"
 
     def generate(
@@ -62,6 +64,7 @@ class AsymmetricJwtTokenService(JwtTokenService):
             self.public_key,
             algorithms=self.algorithm,
             issuer=self.issuer,
+            options=self.options,
         )
 
     def get_unverified_claims(self, token: str) -> dict:
@@ -75,12 +78,12 @@ class ExtendedAsymmetricJwtTokenService(AsymmetricJwtTokenService):
         private_key: str,
         kid: str,
         jwk_service: Optional[JwkService] = None,
+        options: Optional[dict] = None,
         *args,
         **kwargs,
     ):
-        super(ExtendedAsymmetricJwtTokenService, self).__init__(
-            issuer, private_key, *args, **kwargs
-        )
+        kwargs.update(dict(issuer=issuer, private_key=private_key, options=options))
+        super(ExtendedAsymmetricJwtTokenService, self).__init__(*args, **kwargs)
         self.kid = kid
         self.jwk_service = jwk_service
 
@@ -117,5 +120,6 @@ class ExtendedAsymmetricJwtTokenService(AsymmetricJwtTokenService):
                 key.public_key,
                 algorithms=self.algorithm,
                 issuer=self.issuer,
+                options=self.options,
             )
         raise NotAllowedException("No permission!")

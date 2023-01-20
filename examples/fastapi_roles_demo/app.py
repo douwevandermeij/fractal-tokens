@@ -7,7 +7,6 @@ from fastapi_roles_demo.utils import (
     rsa_key_pair,
 )
 
-from fractal_tokens.services.generic import TokenPayload
 from fractal_tokens.services.jwt.asymmetric import AsymmetricJwtTokenService
 
 app = FastAPI()
