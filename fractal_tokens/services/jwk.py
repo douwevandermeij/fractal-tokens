@@ -1,7 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 
 @dataclass
@@ -17,8 +17,8 @@ class JwkService(ABC):
 
 
 class LocalJwkService(JwkService):
-    def __init__(self, jwks: List[Jwk]):
-        self.jwks = jwks
+    def __init__(self, jwks: Optional[List[Jwk]] = None):
+        self.jwks = jwks or []
 
     def get_jwks(self, issuer: str = "") -> List[Jwk]:
         return self.jwks
@@ -38,9 +38,14 @@ class RemoteJwkService(JwkService):
 
 
 class AutomaticJwkService(JwkService):
-    def __init__(self, jwks: List[Jwk], endpoint: str = "/public/keys"):
-        self.local_jwk_service = LocalJwkService(jwks)
-        self.remote_jwk_service = RemoteJwkService(endpoint)
+    def __init__(
+        self,
+        *,
+        local_jwk_service: JwkService = LocalJwkService(),
+        remote_jwk_service: JwkService = RemoteJwkService(),
+    ):
+        self.local_jwk_service = local_jwk_service
+        self.remote_jwk_service = remote_jwk_service
 
     def get_jwks(self, issuer: str = "") -> List[Jwk]:
         if issuer.startswith("http"):

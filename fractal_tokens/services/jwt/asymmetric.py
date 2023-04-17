@@ -1,7 +1,7 @@
 from typing import Optional
 
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric.types import PUBLIC_KEY_TYPES
+from cryptography.hazmat.primitives.asymmetric.types import PublicKeyTypes
 from jose import jwt
 
 from fractal_tokens.exceptions import (
@@ -19,7 +19,7 @@ class AsymmetricJwtTokenService(JwtTokenService):
         self,
         issuer: str,
         private_key: str,
-        public_key: Optional[PUBLIC_KEY_TYPES] = None,
+        public_key: Optional[PublicKeyTypes] = None,
         options: Optional[dict] = None,
         *args,
         **kwargs,

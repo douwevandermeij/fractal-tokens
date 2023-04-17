@@ -3,7 +3,7 @@ import uuid
 from automatic.utils import rsa_key_pair
 from cryptography.hazmat.primitives import serialization
 
-from fractal_tokens.services.jwk import AutomaticJwkService, Jwk
+from fractal_tokens.services.jwk import AutomaticJwkService, Jwk, LocalJwkService
 from fractal_tokens.services.jwt.asymmetric import (
     AsymmetricJwtTokenService,
     ExtendedAsymmetricJwtTokenService,
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     private_key, public_key = rsa_key_pair()
     secret_key = "**SECRET**"
     kid = str(uuid.uuid4())
-    jwk_service = AutomaticJwkService(
+    local_jwk_service = LocalJwkService(
         jwks=[
             Jwk(
                 id=kid,
@@ -25,6 +25,9 @@ if __name__ == "__main__":
                 ).decode("utf-8"),
             )
         ]
+    )
+    jwk_service = AutomaticJwkService(
+        local_jwk_service=local_jwk_service,
     )
 
     asymmetric_token_service = AsymmetricJwtTokenService(

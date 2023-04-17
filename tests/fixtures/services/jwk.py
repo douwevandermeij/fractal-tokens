@@ -28,7 +28,7 @@ def local_jwk_service(rsa_key_pair):
 def empty_local_jwk_service():
     from fractal_tokens.services.jwk import LocalJwkService
 
-    yield LocalJwkService([])
+    yield LocalJwkService()
 
 
 @pytest.fixture
@@ -44,10 +44,10 @@ def automatic_jwk_service(rsa_key_pair):
 
     from cryptography.hazmat.primitives import serialization
 
-    from fractal_tokens.services.jwk import AutomaticJwkService
+    from fractal_tokens.services.jwk import AutomaticJwkService, LocalJwkService
 
-    yield AutomaticJwkService(
-        [
+    local_jwk_service = LocalJwkService(
+        jwks=[
             Jwk(
                 id=kid,
                 public_key=public_key.public_bytes(
@@ -56,6 +56,10 @@ def automatic_jwk_service(rsa_key_pair):
                 ).decode("utf-8"),
             )
         ]
+    )
+
+    yield AutomaticJwkService(
+        local_jwk_service=local_jwk_service,
     )
 
 
