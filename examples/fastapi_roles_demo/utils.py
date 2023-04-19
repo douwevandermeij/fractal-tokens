@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
-from fractal_roles.models import Role, TokenPayloadRolesMixin  # type: ignore
-from fractal_roles.services import RolesService as BaseRolesService  # type: ignore
+from fractal_roles.models import Role, TokenPayloadRolesMixin
+from fractal_roles.services import RolesService as BaseRolesService
 
 from fractal_tokens.services.generic import TokenPayload, TokenService
 
