@@ -21,25 +21,31 @@ class AutomaticJwtTokenService(JwtTokenService):
         issuer: str,
         secret_key: str,
         jwk_service: JwkService,
+        audience: str = "",
         options: Optional[dict] = None,
+        auto_load_jwks_from_issuer: bool = False,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.issuer = issuer
+        self.audience = audience
         self.symmetric_token_service = SymmetricJwtTokenService(
             issuer=issuer,
             secret_key=secret_key,
+            options=options,
         )
         public_key = None
-        if jwks := jwk_service.get_jwks(issuer):
-            public_key = serialization.load_pem_public_key(
-                jwks[0].public_key.encode("utf-8"), backend=default_backend()
-            )
+        if auto_load_jwks_from_issuer:
+            if jwks := jwk_service.get_jwks(issuer):
+                public_key = serialization.load_pem_public_key(
+                    jwks[0].public_key.encode("utf-8"), backend=default_backend()
+                )
         self.asymmetric_token_service = AsymmetricJwtTokenService(
             issuer=issuer,
             private_key="",
             public_key=public_key,
+            audience=audience,
             options=options,
         )
         self.extended_asymmetric_token_service = ExtendedAsymmetricJwtTokenService(
@@ -47,6 +53,7 @@ class AutomaticJwtTokenService(JwtTokenService):
             private_key="",
             kid="",
             jwk_service=jwk_service,
+            audience=audience,
             options=options,
         )
 

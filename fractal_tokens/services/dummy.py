@@ -12,7 +12,9 @@ class DummyJsonTokenService(TokenService):
         token_type: str = "access",
         seconds_valid: int = ACCESS_TOKEN_EXPIRATION_SECONDS,
     ) -> str:
-        return json.dumps(self._prepare(payload, token_type, seconds_valid, "dummy"))
+        return json.dumps(
+            self._prepare(payload, token_type, seconds_valid, "dummy", "")
+        )
 
     def verify(self, token: str, *, typ: str = "access") -> TokenPayload:
         try:

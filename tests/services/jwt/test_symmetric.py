@@ -29,7 +29,16 @@ def test_symmetric_default_1_day_valid(symmetric_jwt_token_service):
 def test_symmetric_get_unverified_claims(symmetric_jwt_token_service):
     token = symmetric_jwt_token_service.generate({})
     claims = symmetric_jwt_token_service.get_unverified_claims(token)
-    assert set(claims.keys()) == {"iss", "sub", "exp", "nbf", "iat", "jti", "typ"}
+    assert set(claims.keys()) == {
+        "iss",
+        "aud",
+        "sub",
+        "exp",
+        "nbf",
+        "iat",
+        "jti",
+        "typ",
+    }
     assert claims["typ"] == "access"
 
 

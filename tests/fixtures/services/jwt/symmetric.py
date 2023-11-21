@@ -8,4 +8,5 @@ def symmetric_jwt_token_service(secret_key):
     yield SymmetricJwtTokenService(
         issuer="test",
         secret_key=secret_key,
+        options={"verify_aud": False},
     )

@@ -14,7 +14,16 @@ def test_extended_asymmetric_ok(extended_asymmetric_jwt_token_service):
 def test_dummy_get_unverified_claims(extended_asymmetric_jwt_token_service):
     token = extended_asymmetric_jwt_token_service.generate({})
     claims = extended_asymmetric_jwt_token_service.get_unverified_claims(token)
-    assert set(claims.keys()) == {"iss", "sub", "exp", "nbf", "iat", "jti", "typ"}
+    assert set(claims.keys()) == {
+        "iss",
+        "aud",
+        "sub",
+        "exp",
+        "nbf",
+        "iat",
+        "jti",
+        "typ",
+    }
     assert claims["typ"] == "access"
 
 
@@ -74,3 +83,18 @@ def test_extended_asymmetric_no_jwk_service(
 
     with pytest.raises(NotAllowedException):
         extended_asymmetric_jwt_token_service_no_jwk_service.verify("")
+
+
+def test_asymmetric_audience_ok(extended_asymmetric_jwt_token_service_verify_aud):
+    token = extended_asymmetric_jwt_token_service_verify_aud.generate({})
+    assert extended_asymmetric_jwt_token_service_verify_aud.verify(token)
+
+
+def test_asymmetric_audience_nok(extended_asymmetric_jwt_token_service_verify_aud):
+    token = extended_asymmetric_jwt_token_service_verify_aud.generate({})
+    extended_asymmetric_jwt_token_service_verify_aud.audience = "different_audience"
+
+    from fractal_tokens.exceptions import TokenInvalidException
+
+    with pytest.raises(TokenInvalidException):
+        extended_asymmetric_jwt_token_service_verify_aud.verify(token)

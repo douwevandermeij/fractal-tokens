@@ -36,6 +36,7 @@ def asymmetric_jwt_token_service(rsa_key_pair):
         issuer="test",
         private_key=private_key,
         public_key=public_key,
+        options={"verify_aud": False},
     )
 
 
@@ -50,6 +51,25 @@ def extended_asymmetric_jwt_token_service(rsa_key_pair, automatic_jwk_service):
         private_key=private_key,
         kid=kid,
         jwk_service=automatic_jwk_service,
+        options={"verify_aud": False},
+    )
+
+
+@pytest.fixture
+def extended_asymmetric_jwt_token_service_verify_aud(
+    rsa_key_pair, automatic_jwk_service
+):
+    kid, private_key, public_key = rsa_key_pair
+
+    from fractal_tokens.services.jwt.asymmetric import ExtendedAsymmetricJwtTokenService
+
+    yield ExtendedAsymmetricJwtTokenService(
+        issuer="test",
+        private_key=private_key,
+        kid=kid,
+        jwk_service=automatic_jwk_service,
+        audience="audience",
+        options={"verify_aud": True},
     )
 
 

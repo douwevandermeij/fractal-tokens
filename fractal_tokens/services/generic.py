@@ -22,6 +22,7 @@ TokenPayloadClass = TypeVar("TokenPayloadClass", bound=Dataclass)
 @dataclass
 class TokenPayload:
     iss: str  # Issuer
+    aud: str  # Audience
     sub: str  # Subject
     exp: int  # Expiration Time
     nbf: int  # Not Before
@@ -49,7 +50,12 @@ class TokenService(Generic[TokenPayloadClass]):
         raise NotImplementedError
 
     def _prepare(
-        self, payload: dict, token_type: str, seconds_valid: int, issuer: str
+        self,
+        payload: dict,
+        token_type: str,
+        seconds_valid: int,
+        issuer: str,
+        audience: str,
     ) -> dict:
         payload_contract = not set(payload.keys()) or set(payload.keys()) & set(
             self.token_payload_cls.__dataclass_fields__.keys()
@@ -73,6 +79,7 @@ class TokenService(Generic[TokenPayloadClass]):
                     nbf=utcnow,
                     jti=str(uuid.uuid4()),
                     iss=issuer,
+                    aud=audience,
                     exp=utcnow + seconds_valid,
                     typ=token_type,
                     sub=payload.get("sub", ""),

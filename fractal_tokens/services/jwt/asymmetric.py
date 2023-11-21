@@ -20,12 +20,14 @@ class AsymmetricJwtTokenService(JwtTokenService):
         issuer: str,
         private_key: str,
         public_key: Optional[PublicKeyTypes] = None,
+        audience: str = "",
         options: Optional[dict] = None,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.issuer = issuer
+        self.audience = audience
         self.private_key = private_key
         self.public_key = (
             public_key.public_bytes(
@@ -49,7 +51,9 @@ class AsymmetricJwtTokenService(JwtTokenService):
                 "Cannot generate asymmetric token since no private key provided!"
             )
         return jwt.encode(
-            self._prepare(payload, token_type, seconds_valid, self.issuer),
+            self._prepare(
+                payload, token_type, seconds_valid, self.issuer, self.audience
+            ),
             self.private_key,
             algorithm=self.algorithm,
         )
@@ -64,6 +68,7 @@ class AsymmetricJwtTokenService(JwtTokenService):
             self.public_key,
             algorithms=self.algorithm,
             issuer=self.issuer,
+            audience=self.audience,
             options=self.options,
         )
 
@@ -78,11 +83,19 @@ class ExtendedAsymmetricJwtTokenService(AsymmetricJwtTokenService):
         private_key: str,
         kid: str,
         jwk_service: Optional[JwkService] = None,
+        audience: str = "",
         options: Optional[dict] = None,
         *args,
         **kwargs,
     ):
-        kwargs.update(dict(issuer=issuer, private_key=private_key, options=options))
+        kwargs.update(
+            dict(
+                issuer=issuer,
+                private_key=private_key,
+                audience=audience,
+                options=options,
+            )
+        )
         super(ExtendedAsymmetricJwtTokenService, self).__init__(*args, **kwargs)
         self.kid = kid
         self.jwk_service = jwk_service
@@ -98,7 +111,9 @@ class ExtendedAsymmetricJwtTokenService(AsymmetricJwtTokenService):
                 "Cannot generate asymmetric token since no private key supplied!"
             )
         return jwt.encode(
-            self._prepare(payload, token_type, seconds_valid, self.issuer),
+            self._prepare(
+                payload, token_type, seconds_valid, self.issuer, self.audience
+            ),
             self.private_key,
             algorithm=self.algorithm,
             headers={"kid": self.kid},
@@ -120,6 +135,7 @@ class ExtendedAsymmetricJwtTokenService(AsymmetricJwtTokenService):
                 key.public_key,
                 algorithms=self.algorithm,
                 issuer=self.issuer,
+                audience=self.audience,
                 options=self.options,
             )
         raise NotAllowedException("No permission!")

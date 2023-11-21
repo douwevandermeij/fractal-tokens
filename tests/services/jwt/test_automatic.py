@@ -25,7 +25,16 @@ def test_automatic_get_unverified_claims(
 ):
     token = symmetric_jwt_token_service.generate({})
     claims = automatic_jwt_token_service.get_unverified_claims(token)
-    assert set(claims.keys()) == {"iss", "sub", "exp", "nbf", "iat", "jti", "typ"}
+    assert set(claims.keys()) == {
+        "iss",
+        "aud",
+        "sub",
+        "exp",
+        "nbf",
+        "iat",
+        "jti",
+        "typ",
+    }
     assert claims["typ"] == "access"
 
 
@@ -63,3 +72,11 @@ def test_automatic_generate(automatic_jwt_token_service):
 
     with pytest.raises(NotImplementedException):
         automatic_jwt_token_service.generate({})
+
+
+def test_asymmetric_audience_automatic_ok(
+    extended_asymmetric_jwt_token_service_verify_aud,
+    automatic_jwt_token_service_verify_aud,
+):
+    token = extended_asymmetric_jwt_token_service_verify_aud.generate({})
+    assert automatic_jwt_token_service_verify_aud.verify(token)

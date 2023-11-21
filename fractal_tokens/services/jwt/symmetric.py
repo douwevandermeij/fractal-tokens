@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 from jose import jwt
 
@@ -7,11 +7,19 @@ from fractal_tokens.settings import ACCESS_TOKEN_EXPIRATION_SECONDS
 
 
 class SymmetricJwtTokenService(JwtTokenService):
-    def __init__(self, issuer: str, secret_key: str, *args, **kwargs):
+    def __init__(
+        self,
+        issuer: str,
+        secret_key: str,
+        options: Optional[dict] = None,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.issuer = issuer
         self.secret_key = secret_key
         self.algorithm = "HS256"
+        self.options = options
 
     def generate(
         self,
@@ -20,13 +28,15 @@ class SymmetricJwtTokenService(JwtTokenService):
         seconds_valid: int = ACCESS_TOKEN_EXPIRATION_SECONDS,
     ) -> str:
         return jwt.encode(
-            self._prepare(payload, token_type, seconds_valid, self.issuer),
+            self._prepare(payload, token_type, seconds_valid, self.issuer, ""),
             self.secret_key,
             algorithm=self.algorithm,
         )
 
     def decode(self, token: str) -> dict:
-        return jwt.decode(token, self.secret_key, algorithms=self.algorithm)
+        return jwt.decode(
+            token, self.secret_key, algorithms=self.algorithm, options=self.options
+        )
 
     def get_unverified_claims(self, token: str) -> dict:
         return jwt.get_unverified_claims(token)
