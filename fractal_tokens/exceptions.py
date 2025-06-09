@@ -1,6 +1,4 @@
 class TokenInvalidException(Exception):
-    ...
-
     def __init__(self, message=None):
         if not message:
             message = "The supplied token is invalid!"
@@ -8,8 +6,6 @@ class TokenInvalidException(Exception):
 
 
 class TokenExpiredException(Exception):
-    ...
-
     def __init__(self, message=None):
         if not message:
             message = "The supplied token is expired!"
@@ -17,20 +13,20 @@ class TokenExpiredException(Exception):
 
 
 class NotAllowedException(Exception):
-    ...
+    pass
 
 
 class InvalidPayloadException(Exception):
-    ...
+    pass
 
 
 class NoPrivateKeyException(Exception):
-    ...
+    pass
 
 
 class NoPublicKeyException(Exception):
-    ...
+    pass
 
 
 class NotImplementedException(Exception):
-    ...
+    pass
