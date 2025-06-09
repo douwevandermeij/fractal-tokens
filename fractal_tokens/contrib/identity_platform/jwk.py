@@ -1,11 +1,11 @@
 import json
-from functools import cache
+from functools import lru_cache
 
 from fractal_tokens.services.jwk import Jwk, JwkService
 
 
 class GoogleIdentityPlatformJwkService(JwkService):
-    @cache
+    @lru_cache(maxsize=None)
     def get_jwks(self, issuer: str = "") -> list[Jwk]:
         from urllib.request import (  # needs to be here to be able to mock in tests
             urlopen,
