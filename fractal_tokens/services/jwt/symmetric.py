@@ -11,6 +11,7 @@ class SymmetricJwtTokenService(JwtTokenService):
         self,
         issuer: str,
         secret_key: str,
+        audience: str = "",
         options: Optional[dict] = None,
         *args,
         **kwargs,
@@ -19,6 +20,7 @@ class SymmetricJwtTokenService(JwtTokenService):
         self.issuer = issuer
         self.secret_key = secret_key
         self.algorithm = "HS256"
+        self.audience = audience
         self.options = options
 
     def generate(
@@ -28,7 +30,7 @@ class SymmetricJwtTokenService(JwtTokenService):
         seconds_valid: int = ACCESS_TOKEN_EXPIRATION_SECONDS,
     ) -> str:
         return jwt.encode(
-            self._prepare(payload, token_type, seconds_valid, self.issuer, ""),
+            self._prepare(payload, token_type, seconds_valid, self.issuer, self.audience),
             self.secret_key,
             algorithm=self.algorithm,
         )

@@ -33,6 +33,7 @@ class AutomaticJwtTokenService(JwtTokenService):
         self.symmetric_token_service = SymmetricJwtTokenService(
             issuer=issuer,
             secret_key=secret_key,
+            audience=audience,
             options=options,
         )
         public_key = kwargs.get("public_key", None)
@@ -43,14 +44,14 @@ class AutomaticJwtTokenService(JwtTokenService):
                 )
         self.asymmetric_token_service = AsymmetricJwtTokenService(
             issuer=issuer,
-            private_key="",
+            private_key=kwargs.get("private_key", ""),
             public_key=public_key,
             audience=audience,
             options=options,
         )
         self.extended_asymmetric_token_service = ExtendedAsymmetricJwtTokenService(
             issuer=issuer,
-            private_key="",
+            private_key=kwargs.get("private_key", ""),
             kid="",
             jwk_service=jwk_service,
             audience=audience,
