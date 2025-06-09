@@ -34,7 +34,7 @@ class TokenPayload:
 class TokenService(Generic[TokenPayloadClass]):
     token_payload_cls: Type[TokenPayload]
 
-    def __init__(self, token_payload_cls: Optional[Type[TokenPayload]] = None):
+    def __init__(self, token_payload_cls: Optional[Type[TokenPayload]] = None, *args, **kwargs):
         if not hasattr(self, "token_payload_cls"):
             if not token_payload_cls:
                 token_payload_cls = TokenPayload

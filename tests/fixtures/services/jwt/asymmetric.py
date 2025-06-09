@@ -12,7 +12,7 @@ def rsa_key_pair():
     key = rsa.generate_private_key(
         backend=default_backend(),
         public_exponent=65537,
-        key_size=512,  # use at least 4096 in production, not 512, but this is quicker in tests!
+        key_size=1024,  # use at least 4096 in production, not 1024, but this is quicker in tests!
     )
 
     private_key = key.private_bytes(

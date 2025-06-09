@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.types import PublicKeyTypes
@@ -19,7 +19,7 @@ class AsymmetricJwtTokenService(JwtTokenService):
         self,
         issuer: str,
         private_key: str,
-        public_key: Optional[PublicKeyTypes] = None,
+        public_key: Optional[Union[PublicKeyTypes, str]] = None,
         audience: str = "",
         options: Optional[dict] = None,
         *args,
@@ -29,14 +29,15 @@ class AsymmetricJwtTokenService(JwtTokenService):
         self.issuer = issuer
         self.audience = audience
         self.private_key = private_key
-        self.public_key = (
-            public_key.public_bytes(
+        if isinstance(public_key, str):
+            self.public_key = public_key
+        elif public_key is not None:
+            self.public_key = public_key.public_bytes(
                 serialization.Encoding.PEM,
                 serialization.PublicFormat.SubjectPublicKeyInfo,
             ).decode("utf-8")
-            if public_key
-            else ""
-        )
+        else:
+            self.public_key = ""
         self.options = options if options else {}
         self.algorithm = "RS256"
 

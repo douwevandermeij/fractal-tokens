@@ -35,7 +35,7 @@ class AutomaticJwtTokenService(JwtTokenService):
             secret_key=secret_key,
             options=options,
         )
-        public_key = None
+        public_key = kwargs.get("public_key", None)
         if auto_load_jwks_from_issuer:
             if jwks := jwk_service.get_jwks(issuer):
                 public_key = serialization.load_pem_public_key(
@@ -69,12 +69,16 @@ class AutomaticJwtTokenService(JwtTokenService):
 
     def decode(self, token: str) -> dict:
         headers = jwt.get_unverified_headers(token)
-        if headers["alg"] == "HS256":
+
+        alg = headers["alg"]
+
+        if alg == "HS256":
             return self.symmetric_token_service.decode(token)
-        if headers["alg"] == "RS256":
+        elif alg == "RS256":
             if "kid" in headers:
                 return self.extended_asymmetric_token_service.decode(token)
             return self.asymmetric_token_service.decode(token)
+
         raise NotAllowedException("No permission!")
 
     def get_unverified_claims(self, token: str) -> dict:
