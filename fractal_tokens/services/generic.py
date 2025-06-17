@@ -2,7 +2,7 @@ import uuid
 from abc import abstractmethod
 from calendar import timegm
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Generic, Optional, Protocol, Type, TypeVar
 
 from fractal_tokens.exceptions import InvalidPayloadException
@@ -65,7 +65,7 @@ class TokenService(Generic[TokenPayloadClass]):
                 f"The supplied payload fields ({set(payload.keys())}) are not known to "
                 f"'{self.token_payload_cls}' ({set(self.token_payload_cls.__dataclass_fields__.keys())})"
             )
-        utcnow = timegm(datetime.utcnow().utctimetuple())
+        utcnow = timegm(datetime.now(timezone.utc).utctimetuple())
         if not seconds_valid:
             seconds_valid = (
                 REFRESH_TOKEN_EXPIRATION_SECONDS
