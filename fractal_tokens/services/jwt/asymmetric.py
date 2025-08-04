@@ -124,12 +124,13 @@ class ExtendedAsymmetricJwtTokenService(AsymmetricJwtTokenService):
         if not self.jwk_service:
             raise NotAllowedException("No permission!")
         headers = jwt.get_unverified_headers(token)
-        kid = headers.get("kid", None)
+        kid = headers.get("kid", "")
         if not kid:
             raise NotAllowedException("No permission!")
         claims = jwt.get_unverified_claims(token)
         for key in filter(
-            lambda k: k.id == kid, self.jwk_service.get_jwks(claims["iss"])
+            lambda k: k.id == kid,
+            self.jwk_service.get_jwks(issuer=claims["iss"], kid=kid),
         ):
             return jwt.decode(
                 token,

@@ -12,11 +12,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 @dataclass
 class TokenPayloadRoles(TokenPayloadRolesMixin, TokenPayload):
-    ...
+    pass
 
 
 class User(Role):
-    ...
+    pass
 
 
 class RolesService(BaseRolesService):

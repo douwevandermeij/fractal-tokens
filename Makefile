@@ -10,6 +10,7 @@ deps:  ## Install dependencies
 	python -m pip install --upgrade pip
 	python -m pip install black coverage cryptography flake8 flit isort mccabe mypy pylint pytest pytest-cov pytest-asyncio pytest-lazy-fixture pytest-mock python-jose tox tox-gh-actions types-python-jose pre-commit autoflake
 	pre-commit install
+	pre-commit autoupdate --repo https://github.com/pre-commit/pre-commit-hooks
 
 lint:  ## Lint and static-check
 	pre-commit run --all-files

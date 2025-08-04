@@ -99,3 +99,25 @@ def extended_asymmetric_jwt_token_service_no_jwk_service(
 ):
     extended_asymmetric_jwt_token_service.jwk_service = None
     yield extended_asymmetric_jwt_token_service
+
+
+@pytest.fixture
+def asymmetric_jwt_token_service_string_public_key(rsa_key_pair):
+    kid, private_key, public_key = rsa_key_pair
+
+    from cryptography.hazmat.primitives import serialization
+
+    from fractal_tokens.services.jwt.asymmetric import AsymmetricJwtTokenService
+
+    # Convert public key to string format
+    public_key_str = public_key.public_bytes(
+        serialization.Encoding.PEM,
+        serialization.PublicFormat.SubjectPublicKeyInfo,
+    ).decode("utf-8")
+
+    yield AsymmetricJwtTokenService(
+        issuer="test",
+        private_key=private_key,
+        public_key=public_key_str,  # Pass as string instead of object
+        options={"verify_aud": False},
+    )

@@ -7,7 +7,7 @@ from fractal_tokens.services.jwk import Jwk, JwkService
 
 class GoogleIdentityPlatformJwkService(JwkService):
     @lru_cache(maxsize=None)
-    def get_jwks(self, issuer: str = "") -> List[Jwk]:
+    def get_jwks(self, issuer: str = "", kid: str = "") -> List[Jwk]:
         from urllib.request import (  # needs to be here to be able to mock in tests
             urlopen,
         )

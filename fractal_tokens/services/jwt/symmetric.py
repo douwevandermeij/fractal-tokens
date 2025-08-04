@@ -30,7 +30,9 @@ class SymmetricJwtTokenService(JwtTokenService):
         seconds_valid: int = ACCESS_TOKEN_EXPIRATION_SECONDS,
     ) -> str:
         return jwt.encode(
-            self._prepare(payload, token_type, seconds_valid, self.issuer, self.audience),
+            self._prepare(
+                payload, token_type, seconds_valid, self.issuer, self.audience
+            ),
             self.secret_key,
             algorithm=self.algorithm,
         )

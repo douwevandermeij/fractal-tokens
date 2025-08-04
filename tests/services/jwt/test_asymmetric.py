@@ -98,3 +98,15 @@ def test_asymmetric_audience_nok(extended_asymmetric_jwt_token_service_verify_au
 
     with pytest.raises(TokenInvalidException):
         extended_asymmetric_jwt_token_service_verify_aud.verify(token)
+
+
+def test_asymmetric_string_public_key(asymmetric_jwt_token_service_string_public_key):
+    """Test that AsymmetricJwtTokenService works when public_key is passed as a string."""
+    token = asymmetric_jwt_token_service_string_public_key.generate({})
+    assert asymmetric_jwt_token_service_string_public_key.verify(token)
+
+    # Verify the public key was stored as string
+    assert isinstance(asymmetric_jwt_token_service_string_public_key.public_key, str)
+    assert asymmetric_jwt_token_service_string_public_key.public_key.startswith(
+        "-----BEGIN PUBLIC KEY-----"
+    )
