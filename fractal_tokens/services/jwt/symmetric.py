@@ -39,7 +39,12 @@ class SymmetricJwtTokenService(JwtTokenService):
 
     def decode(self, token: str) -> dict:
         return jwt.decode(
-            token, self.secret_key, algorithms=self.algorithm, options=self.options
+            token,
+            self.secret_key,
+            algorithms=self.algorithm,
+            options=self.options,
+            audience=self.audience,
+            issuer=self.issuer,
         )
 
     def get_unverified_claims(self, token: str) -> dict:
